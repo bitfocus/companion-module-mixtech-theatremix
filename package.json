@@ -1,0 +1,22 @@
+{
+	"name": "X32TC",
+	"legacy": [
+		"direct_osc"
+	],
+	"version": "1.0.1",
+	"api_version": "1.0.0",
+	"keywords": [
+		"Show Control",
+		"Audio"
+	],
+	"manufacturer": "James Holt",
+	"product": "X32TC",
+	"shortname": "X32TC",
+	"description": "X32TC plugin for Companion",
+	"main": "x32tc.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Anthony Hunt <ant.hunt@gmail.com>",
+	"license": "MIT"
+}
