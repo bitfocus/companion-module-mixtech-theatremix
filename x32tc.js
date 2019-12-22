@@ -91,33 +91,11 @@ instance.prototype.actions = function(system) {
 	var self = this;
 
 	self.system.emit('instance_actions', self.id, {
-		'send_blank': {
-			label: 'Send custom OSC message',
-			options: [
-				{
-					type: 'textinput',
-					label: 'OSC Path',
-					id: 'path',
-					default: '/osc/path'
-				}
-			]
+		'go': {
+			label: 'GO'
 		},
-		'send_string': {
-			label: 'Send custom OSC message with argument',
-			options: [
-				{
-					type: 'textinput',
-					label: 'OSC Path',
-					id: 'path',
-					default: '/osc/path'
-				},
-				{
-					type: 'textinput',
-					label: 'Value',
-					id: 'string',
-					default: "text"
-				}
-			]
+		'back': {
+			label: 'Back'
 		},
 		'jump_cue': {
 			label: 'Jump to cue',
@@ -222,20 +200,6 @@ instance.prototype.action = function(action) {
 			cmd = '/back';
 			break;
 
-		case 'send_blank':
-			arg = [];
-			cmd = action.options.path;
-			break;
-
-		case 'send_string':
-			var bol = {
-				type: "s",
-				value: "" + action.options.string
-			};
-			arg =  bol;
-			cmd = action.options.path;
-			break;
-			
 		case 'jump_cue':
 			var bol = {
 				type: "s",
