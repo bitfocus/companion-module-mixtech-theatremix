@@ -1,3 +1,14 @@
+/*
+ Version 1.0.2
+  Pulled from Git, indentation changed from hard space to tab.
+  Changed "custom osc" commands to "currently unsupported" commands, but commented out as not yet implimented (currently used for testing purposes only)
+ 
+ Version 1.0.1
+    Added presets and actions to start & stop cues.
+    Added preset and action to jump to a specific cue.
+
+*/
+
 var instance_skel = require('../../instance_skel');
 var debug;
 var log;
@@ -91,6 +102,34 @@ instance.prototype.actions = function(system) {
 	var self = this;
 
 	self.system.emit('instance_actions', self.id, {
+/*		'send_unsupport_command': {
+			label: 'Send currently unsupported command',
+				options: [
+				{
+					type: 'textinput',
+					label: 'OSC Path',
+					id: 'path',
+					default: '/osc/path'
+				}
+			]
+		},
+		'send_unsupport_command_string': {
+			label: 'Send currently unsupported command with argument',
+			options: [
+				{
+					type: 'textinput',
+					label: 'OSC Path',
+					id: 'path',
+					default: '/osc/path'
+				},
+				{
+					type: 'textinput',
+					label: 'Value',
+					id: 'string',
+					default: "text"
+				}
+			]
+		}, */
 		'go': {
 			label: 'GO'
 		},
@@ -190,6 +229,21 @@ instance.prototype.action = function(action) {
 	debug('action: ', action);
 
 	switch (action.action) {
+
+/*		case 'send_unsupported_command':
+			arg = [];
+			cmd = action.options.path;
+			break;
+
+		case 'send_unsupported_command_string':
+			var bol = {
+			  type: "s",
+			  value: "" + action.options.string
+			};
+			arg =  bol;
+			cmd = action.options.path;
+			break; */
+
 		case 'go':
 			arg = null;
 			cmd = '/go';
