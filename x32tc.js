@@ -1,4 +1,14 @@
 /*
+ Version 1.0.4
+	Added presets and actions to lock/unlock changes (Supported in X32TCv2.9.1).
+	Added presets and actions for moving the selected cue (Supported in X32TCv2.9.1).
+	Added presets and actions to Undo/Redo changes (Supported in X32TCv2.9.1).
+	Added presets and actions to Add/Clone/Delete cues (Supported in X32TCv2.9.1).
+	Changed preset colour to make more uniform.
+	Changed preset font size to make more uniform.
+	Added Numeric keypad presets and actions to allow entering a cue manually.
+	Added User variable so that typed cue number can be seen in the outside of the module.
+ 
  Version 1.0.2
   Pulled from Git, indentation changed from hard space to tab.
   Changed "custom osc" commands to "currently unsupported" commands, but commented out as not yet implimented (currently used for testing purposes only)
@@ -12,6 +22,10 @@
 var instance_skel = require('../../instance_skel');
 var debug;
 var log;
+
+var keypad_jump_cue = "";
+
+//keypad_jump_cue = "";
 
 function instance(system, id, config) {
 	var self = this;
@@ -51,6 +65,17 @@ instance.prototype.init = function() {
 	log = self.log;
 
 	self.init_presets();
+	
+	self.setVariableDefinitions( [
+		{
+			label: 'Keypad number',
+			name: 'n_jump_cue_num'
+		}
+	] );
+
+	self.setVariable('n_jump_cue_num', keypad_jump_cue);
+
+	
 };
 
 // Return config fields for web config
@@ -145,8 +170,64 @@ instance.prototype.actions = function(system) {
 					id: 'jumpcue',
 					default: "1"
 				}
-			]
+			],
+		},
+		'select_cue': {
+			label: 'Move Selected cue',
+			options: [
+				{
+					type: 'textinput',
+					label: 'Move Selected cue',
+					id: 'selectcue',
+					default: "current",
+					choices: [
+						{ id: 'up', label: 'Up' },
+						{ id: 'current', label: 'Current' },
+						{ id: 'down', label: 'Down'}
+					]
+
+				}
+			],
+		},
+		'lock': {
+			label: 'Lock'
+		},
+		'unlock': {
+			label: 'Unlock'
+		},
+		'insertcue': {
+			label: 'Insert Cue'
+		},
+		'clonecue': {
+			label: 'Clone Cue'
+		},
+		'deletecue': {
+			label: 'Delete Cue'
+		},
+		'undo': {
+			label: 'Undo'
+		},
+		'redo': {
+			label: 'Redo'
+		},
+		'keypad_ent': {
+			label: 'Keypad Enter Key'
+		},
+		'keypad_clear': {
+			label: 'Keypad Clear Key'
+		},
+		'keypad_num': {
+			label: 'Number to represent',
+			options: [
+				{
+					type: 'textinput',
+					label: 'A digit 0-9',
+					id: 'keypad_num',
+					default: ""
+				}
+			],
 		}
+
 	});
 }
 
@@ -159,7 +240,7 @@ instance.prototype.init_presets = function () {
 			bank: {
 				style: 'text',
 				text: 'GO',
-				size: '30',
+				size: '24',
 				color: self.rgb(0, 0, 0),
 				bgcolor: self.rgb(0, 255, 0)
 			},
@@ -171,11 +252,27 @@ instance.prototype.init_presets = function () {
 		},
 		{
 			category: 'CueList',
+			label: 'Back',
+			bank: {
+				style: 'text',
+				text: 'Back',
+				size: '24',
+				color: '16777215',
+				bgcolor: self.rgb(255, 0, 0)
+			},
+			actions: [
+				{
+					action: 'back',
+				}
+			]
+		},
+		{
+			category: 'CueList',
 			label: 'Jump to Cue',
 			bank: {
 				style: 'text',
-				text: 'Jump to Cue',
-				size: '14',
+				text: 'Jump to\\nCue',
+				size: '18',
 				color: '16777215',
 				bgcolor: self.rgb(0, 0, 100)
 			},
@@ -187,23 +284,225 @@ instance.prototype.init_presets = function () {
 					}
 				}
 			]
+		},
+		{
+			category: 'CueList',
+			label: 'Move Selected Cue Up',
+			bank: {
+				style: 'text',
+				text: 'Select\\nUp',
+				size: '18',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 255, 255)
+			},
+			actions: [
+				{
+					action: 'select_cue',
+					options: {
+						selectcue: 'up',
+					}
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'Use as selected Cue',
+			bank: {
+				style: 'text',
+				text: 'Select\\nCurrent',
+				size: '18',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 255, 255)
+			},
+			actions: [
+				{
+					action: 'select_cue',
+					options: {
+						selectcue: 'current',
+					}
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'Move Selected cue Down',
+			bank: {
+				style: 'text',
+				text: 'Select\\nDown',
+				size: '18',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 255, 255)
+			},
+			actions: [
+				{
+					action: 'select_cue',
+					options: {
+						selectcue: 'down',
+					}
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'Lock Changes',
+			bank: {
+				style: 'text',
+				text: 'Lock\\nChanges',
+				size: '18',
+				color: '16777215',
+				bgcolor: self.rgb(0, 0, 100)
+			},
+			actions: [
+				{
+					action: 'lock',
+				}
+			]
 	},
 		{
 			category: 'CueList',
-			label: 'Back',
+			label: 'Unlock Changes',
 			bank: {
 				style: 'text',
-				text: 'Back',
-				size: '30',
+				text: 'Unlock\\nChanges',
+				size: '18',
+				color: '16777215',
+				bgcolor: self.rgb(0, 0, 100)
+			},
+			actions: [
+				{
+					action: 'unlock',
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'Insert Cue',
+			bank: {
+				style: 'text',
+				text: 'Insert\\nCue',
+				size: '18',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(255, 255, 0)
+			},
+			actions: [
+				{
+					action: 'insertcue',
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'Clone Cue',
+			bank: {
+				style: 'text',
+				text: 'Clone\\nCue',
+				size: '18',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(255, 255, 0)
+			},
+			actions: [
+				{
+					action: 'clonecue',
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'Delete Cue',
+			bank: {
+				style: 'text',
+				text: 'Delete\\nCue',
+				size: '18',
 				color: '16777215',
 				bgcolor: self.rgb(255, 0, 0)
 			},
 			actions: [
 				{
-					action: 'back',
+					action: 'deletecue',
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'Undo',
+			bank: {
+				style: 'text',
+				text: 'Undo',
+				size: '18',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 255)
+			},
+			actions: [
+				{
+					action: 'undo',
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'Redo',
+			bank: {
+				style: 'text',
+				text: 'Redo',
+				size: '18',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 255)
+			},
+			actions: [
+				{
+					action: 'redo',
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'keypad_num',
+			bank: {
+				style: 'text',
+				text: 'Num',
+				size: '18',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 255, 0)
+			},
+			actions: [
+				{
+					action: 'keypad_num',
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'keypad_ent',
+			bank: {
+				style: 'text',
+				text: 'Enter',
+				size: '18',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 255, 0)
+			},
+			actions: [
+				{
+					action: 'keypad_ent',
+				}
+			]
+		},
+		{
+			category: 'CueList',
+			label: 'keypad_clear',
+			bank: {
+				style: 'text',
+				text: 'Clear',
+				size: '18',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 255, 0)
+			},
+			actions: [
+				{
+					action: 'keypad_clear',
 				}
 			]
 		}
+
 	];
 	self.setPresetDefinitions(presets);
 }
@@ -221,6 +520,7 @@ instance.prototype.sendOSC = function (node, arg) {
 	self.system.emit('osc_send',host, self.config.port, node, arg);
 };
 
+
 instance.prototype.action = function(action) {
 	var self = this;
 	var cmd;
@@ -228,6 +528,9 @@ instance.prototype.action = function(action) {
 
 	debug('action: ', action);
 
+	
+
+	
 	switch (action.action) {
 
 /*		case 'send_unsupported_command':
@@ -262,6 +565,75 @@ instance.prototype.action = function(action) {
 			arg =  bol;
 			cmd = '/jump';
 			break;
+
+		case 'select_cue':
+			var bol = {
+				type: "s",
+				value: "" + action.options.selectcue
+			};
+			arg =  bol;
+			cmd = '/select';
+			break;
+
+		case 'lock':
+			arg = null;
+			cmd = '/lock';
+			break;
+
+		case 'unlock':
+			arg = null;
+			cmd = '/unlock';
+			break;
+
+		case 'insertcue':
+			arg = null;
+			cmd = '/insertcue';
+			break;
+
+		case 'clonecue':
+			arg = null;
+			cmd = '/clonecue';
+			break;
+
+		case 'deletecue':
+			arg = null;
+			cmd = '/deletecue';
+			break;
+
+		case 'undo':
+			arg = null;
+			cmd = '/undo';
+			break;
+
+		case 'redo':
+			arg = null;
+			cmd = '/redo';
+			break;
+
+		case 'keypad_clear':
+			keypad_jump_cue = "";
+			self.setVariable('n_jump_cue_num', keypad_jump_cue);
+			break;
+
+		case 'keypad_ent':
+			var bol = {
+				type: "s",
+				value: "" + keypad_jump_cue
+			};
+			arg =  bol;
+			cmd = '/jump';
+			keypad_jump_cue = "";
+			self.setVariable('n_jump_cue_num', keypad_jump_cue);
+
+			break;
+
+		case 'keypad_num':
+			keypad_jump_cue = keypad_jump_cue + action.options.keypad_num
+			self.setVariable('n_jump_cue_num', keypad_jump_cue);
+			break;
+
+			
+
 	}
 
 	if (arg == null) {
