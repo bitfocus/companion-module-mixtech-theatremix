@@ -4,7 +4,7 @@
 *This update bring a few features the X32TC 2.9.1 will support.  in addition to that it adds support for a numeric keyboard button style (add multiple NUM presets and give them a number or ".") and returns a user varible with that number in.  This clears variable clears when either the "Clear" or "Enter" buttons are pressed.
 
 
-##Full version history:
+## Full version history:
 **Version 1.0.4**
 	*Added presets and actions to lock/unlock changes (Supported in X32TCv2.9.1).
 	**Added presets and actions for moving the selected cue (Supported in X32TCv2.9.1).
