@@ -1,4 +1,10 @@
 /*
+ Version 1.0.5
+  Refined X32TC v2.9.1 OSC commands and added preset icons
+  Removed unsupported passcode and example functions
+  Added input validation and feedback to keypad
+  Corrected product naming
+
  Version 1.0.4
 	Added presets and actions to lock/unlock changes (Supported in X32TCv2.9.1).
 	Added presets and actions for moving the selected cue (Supported in X32TCv2.9.1).
@@ -25,8 +31,6 @@ var log;
 
 var keypad_jump_cue = "";
 
-//keypad_jump_cue = "";
-
 function instance(system, id, config) {
 	var self = this;
 
@@ -35,18 +39,6 @@ function instance(system, id, config) {
 
 	self.actions(); // export actions
 
-	// Example: When this script was committed, a fix needed to be made
-	// this will only be run if you had an instance of an older "version" before.
-	// "version" is calculated out from how many upgradescripts your intance config has run.
-	// So just add a addUpgradeScript when you commit a breaking change to the config, that fixes
-	// the config.
-
-	self.addUpgradeScript(function () {
-		// just an example
-		if (self.config.host !== undefined) {
-			self.config.old_host = self.config.host;
-		}
-	});
 	return self;
 }
 
@@ -65,21 +57,11 @@ instance.prototype.init = function() {
 	log = self.log;
 
 	self.init_presets();
-	
-	self.setVariableDefinitions( [
-		{
-			label: 'Keypad number',
-			name: 'n_jump_cue_num'
-		}
-	] );
-
-	self.setVariable('n_jump_cue_num', keypad_jump_cue);
-
-	
+	self.init_feedbacks();	
 };
 
 // Return config fields for web config
-instance.prototype.config_fields = function () {
+instance.prototype.config_fields = function() {
 	var self = this;
 
 	return [
@@ -88,7 +70,7 @@ instance.prototype.config_fields = function () {
 			id: 'info',
 			width: 12,
 			label: 'Information',
-			value: 'Controls X32TC by <a href="https://jamesholt.audio/x32tc/" target="_new">James Holt</a>' + '<br>'
+			value: 'Controls X32 Theatre Control by <a href="http://jamesholt.audio/x32tc/" target="_new">James Holt</a>' + '<br>'
 		},
 		{
 			type: 'textinput',
@@ -97,21 +79,6 @@ instance.prototype.config_fields = function () {
 			width: 8,
 			regex: self.REGEX_IP,
 			default: '127.0.0.1'
-		},
-		{
-			type: 'textinput',
-			id: 'port',
-			label: 'Target Port',
-			width: 4,
-			regex: self.REGEX_PORT,
-			default: '32000'
-		},
-		{
-			type: 'textinput',
-			id: 'passcode',
-			label: 'OSC Pascode',
-			width: 12,
-			tooltip: 'The passcode to controll X32TC.\nNot currently implimented.'
 		}
 	]
 };
@@ -127,36 +94,8 @@ instance.prototype.actions = function(system) {
 	var self = this;
 
 	self.system.emit('instance_actions', self.id, {
-/*		'send_unsupport_command': {
-			label: 'Send currently unsupported command',
-				options: [
-				{
-					type: 'textinput',
-					label: 'OSC Path',
-					id: 'path',
-					default: '/osc/path'
-				}
-			]
-		},
-		'send_unsupport_command_string': {
-			label: 'Send currently unsupported command with argument',
-			options: [
-				{
-					type: 'textinput',
-					label: 'OSC Path',
-					id: 'path',
-					default: '/osc/path'
-				},
-				{
-					type: 'textinput',
-					label: 'Value',
-					id: 'string',
-					default: "text"
-				}
-			]
-		}, */
 		'go': {
-			label: 'GO'
+			label: 'Go'
 		},
 		'back': {
 			label: 'Back'
@@ -166,43 +105,62 @@ instance.prototype.actions = function(system) {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Jump to which cue?',
+					label: 'Cue number',
 					id: 'jumpcue',
-					default: "1"
+					default: "0"
 				}
 			],
 		},
-		'select_cue': {
-			label: 'Move Selected cue',
+		'keypad_entry': {
+			label: 'Keypad entry',
 			options: [
 				{
-					type: 'textinput',
-					label: 'Move Selected cue',
-					id: 'selectcue',
-					default: "current",
+					type: 'dropdown',
+					label: 'Key',
+					id: 'key',
+					default: '0',
 					choices: [
-						{ id: 'up', label: 'Up' },
-						{ id: 'current', label: 'Current' },
-						{ id: 'down', label: 'Down'}
+						{ id: '0', label: '0' },
+						{ id: '1', label: '1' },
+						{ id: '2', label: '2' },
+						{ id: '3', label: '3' },
+						{ id: '4', label: '4' },
+						{ id: '5', label: '5' },
+						{ id: '6', label: '6' },
+						{ id: '7', label: '7' },
+						{ id: '8', label: '8' },
+						{ id: '9', label: '9' },
+						{ id: '.', label: '.' }
 					]
-
 				}
 			],
 		},
-		'lock': {
-			label: 'Lock'
+		'keypad_clear': {
+			label: 'Keypad clear'
 		},
-		'unlock': {
-			label: 'Unlock'
+		'jump_keypad': {
+			label: 'Jump to keypad cue'
 		},
-		'insertcue': {
-			label: 'Insert Cue'
+		'select_current': {
+			label: 'Select current cue'
 		},
-		'clonecue': {
-			label: 'Clone Cue'
+		'select_up': {
+			label: 'Select up'
 		},
-		'deletecue': {
-			label: 'Delete Cue'
+		'select_down': {
+			label: 'Select down'
+		},
+		'jump_selected': {
+			label: 'Jump to selected cue'
+		},
+		'insert_cue': {
+			label: 'Insert cue'
+		},
+		'clone_cue': {
+			label: 'Clone cue'
+		},
+		'delete_cue': {
+			label: 'Delete cue'
 		},
 		'undo': {
 			label: 'Undo'
@@ -210,55 +168,42 @@ instance.prototype.actions = function(system) {
 		'redo': {
 			label: 'Redo'
 		},
-		'keypad_ent': {
-			label: 'Keypad Enter Key'
+		'unlock': {
+			label: 'Unlock editing'
 		},
-		'keypad_clear': {
-			label: 'Keypad Clear Key'
+		'lock': {
+			label: 'Lock editing'
 		},
-		'keypad_num': {
-			label: 'Number to represent',
+		'toggle_backup': {
+			label: 'Toggle backup channel',
 			options: [
 				{
-					type: 'textinput',
-					label: 'A digit 0-9',
-					id: 'keypad_num',
-					default: ""
+					type: 'number',
+					label: 'Main Channel',
+					id: 'channel',
+					min: 1,
+					max: 500,
+					required: true,
+					default: 1
 				}
-			],
+			]
 		}
-
 	});
 }
 
-instance.prototype.init_presets = function () {
-		var self = this;
-		var presets = [
+instance.prototype.init_presets = function() {
+	var self = this;
+	var presets = [
 		{
-			category: 'CueList',
-			label: 'GO',
-			bank: {
-				style: 'text',
-				text: 'GO',
-				size: '24',
-				color: self.rgb(0, 0, 0),
-				bgcolor: self.rgb(0, 255, 0)
-			},
-			actions: [
-				{
-					action: 'go',
-				}
-			]
-		},
-		{
-			category: 'CueList',
+			category: 'Cue Control',
 			label: 'Back',
 			bank: {
-				style: 'text',
-				text: 'Back',
-				size: '24',
-				color: '16777215',
-				bgcolor: self.rgb(255, 0, 0)
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(170, 0, 0),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAGFBMVEX///////////////////////////////8pK8DIAAAACHRSTlMAESKqu8zd/03vFLEAAAAJcEhZcwAACvAAAArwAUKsNJgAAAAgdEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1Yu5EqJAAAAE9JREFUeJxjYBhWgFGBCEWiSUQYFF5G2CjR8nIDwgaVlwoQYVDgqEGjBg0ag0SIMIg4RURZR5TDR40aNWpgjSJY2BNXbRBVATEwEmHQUAAAq+06kWIjJWUAAAAASUVORK5CYII='
 			},
 			actions: [
 				{
@@ -267,170 +212,421 @@ instance.prototype.init_presets = function () {
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'Jump to Cue',
+			category: 'Cue Control',
+			label: 'Go',
 			bank: {
-				style: 'text',
-				text: 'Jump to\\nCue',
-				size: '18',
-				color: '16777215',
-				bgcolor: self.rgb(0, 0, 100)
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 170, 0),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAFVBMVEX///////////////////////////9nSIHRAAAAB3RSTlMAESKqzN3/hRiFmAAAAAlwSFlzAAAK8AAACvABQqw0mAAAACB0RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgTVi7kSokAAAAR0lEQVR4nGNgGBaASYAIRaqORBgUlkLYKOa0NMJGMbqlEWGUyKhRo0YNA6OIUUSUdaMGjRo0qAwiqrAnqtogqgIiriobQgAArH4x0amKFXsAAAAASUVORK5CYII='
+			},
+			actions: [
+				{
+					action: 'go',
+				}
+			]
+		},
+		{
+			category: 'Cue Control',
+			label: 'Jump to cue...',
+			bank: {
+				style: 'png',
+				text: '0',
+				size: '24',
+				alignment: 'center:bottom',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(204, 102, 0),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAGFBMVEX///////////////////////////////8pK8DIAAAACHRSTlMAESKqu8zd/03vFLEAAAAJcEhZcwAACvAAAArwAUKsNJgAAAAgdEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1Yu5EqJAAAAJdJREFUeJztz7ENgCAQheHDCSy0NzFxADdwBCt7GydQ1teAKMfdcRaWvA7C/0UB/l5f0zsz4nO1zfRRe3ToPNidUGaxK46sJRS5u6qUYq4oxeCkYyAacl+ZliyUpiyUtAKEYwFCtQjFuQhFfQZ6gQz0CFkoEFnoNhTIIwrkKQ1ylAY5SoXUXwuUDgE0k/4GzAeorKysTNoJym86giWhNfUAAAAASUVORK5CYII='
 			},
 			actions: [
 				{
 					action: 'jump_cue',
 					options: {
-						jumpcue: '1',
+						jumpcue: '0',
 					}
 				}
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'Move Selected Cue Up',
+			category: 'Cue Keypad',
+			label: '0',
 			bank: {
 				style: 'text',
-				text: 'Select\\nUp',
-				size: '18',
-				color: self.rgb(0, 0, 0),
-				bgcolor: self.rgb(0, 255, 255)
+				text: '0',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
 			},
 			actions: [
 				{
-					action: 'select_cue',
+					action: 'keypad_entry',
 					options: {
-						selectcue: 'up',
+						key: '0'
 					}
 				}
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'Use as selected Cue',
+			category: 'Cue Keypad',
+			label: '1',
 			bank: {
 				style: 'text',
-				text: 'Select\\nCurrent',
-				size: '18',
-				color: self.rgb(0, 0, 0),
-				bgcolor: self.rgb(0, 255, 255)
+				text: '1',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
 			},
 			actions: [
 				{
-					action: 'select_cue',
+					action: 'keypad_entry',
 					options: {
-						selectcue: 'current',
+						key: '1'
 					}
 				}
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'Move Selected cue Down',
+			category: 'Cue Keypad',
+			label: '2',
 			bank: {
 				style: 'text',
-				text: 'Select\\nDown',
-				size: '18',
-				color: self.rgb(0, 0, 0),
-				bgcolor: self.rgb(0, 255, 255)
+				text: '2',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
 			},
 			actions: [
 				{
-					action: 'select_cue',
+					action: 'keypad_entry',
 					options: {
-						selectcue: 'down',
+						key: '2'
 					}
 				}
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'Lock Changes',
+			category: 'Cue Keypad',
+			label: '3',
 			bank: {
 				style: 'text',
-				text: 'Lock\\nChanges',
-				size: '18',
-				color: '16777215',
-				bgcolor: self.rgb(0, 0, 100)
+				text: '3',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
 			},
 			actions: [
 				{
-					action: 'lock',
-				}
-			]
-	},
-		{
-			category: 'CueList',
-			label: 'Unlock Changes',
-			bank: {
-				style: 'text',
-				text: 'Unlock\\nChanges',
-				size: '18',
-				color: '16777215',
-				bgcolor: self.rgb(0, 0, 100)
-			},
-			actions: [
-				{
-					action: 'unlock',
+					action: 'keypad_entry',
+					options: {
+						key: '3'
+					}
 				}
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'Insert Cue',
+			category: 'Cue Keypad',
+			label: '4',
 			bank: {
 				style: 'text',
-				text: 'Insert\\nCue',
-				size: '18',
+				text: '4',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
+			},
+			actions: [
+				{
+					action: 'keypad_entry',
+					options: {
+						key: '4'
+					}
+				}
+			]
+		},
+		{
+			category: 'Cue Keypad',
+			label: '5',
+			bank: {
+				style: 'text',
+				text: '5',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
+			},
+			actions: [
+				{
+					action: 'keypad_entry',
+					options: {
+						key: '5'
+					}
+				}
+			]
+		},
+		{
+			category: 'Cue Keypad',
+			label: '6',
+			bank: {
+				style: 'text',
+				text: '6',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
+			},
+			actions: [
+				{
+					action: 'keypad_entry',
+					options: {
+						key: '6'
+					}
+				}
+			]
+		},
+		{
+			category: 'Cue Keypad',
+			label: '7',
+			bank: {
+				style: 'text',
+				text: '7',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
+			},
+			actions: [
+				{
+					action: 'keypad_entry',
+					options: {
+						key: '7'
+					}
+				}
+			]
+		},
+		{
+			category: 'Cue Keypad',
+			label: '8',
+			bank: {
+				style: 'text',
+				text: '8',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
+			},
+			actions: [
+				{
+					action: 'keypad_entry',
+					options: {
+						key: '8'
+					}
+				}
+			]
+		},
+		{
+			category: 'Cue Keypad',
+			label: '9',
+			bank: {
+				style: 'text',
+				text: '9',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
+			},
+			actions: [
+				{
+					action: 'keypad_entry',
+					options: {
+						key: '9'
+					}
+				}
+			]
+		},
+		{
+			category: 'Cue Keypad',
+			label: 'Point',
+			bank: {
+				style: 'text',
+				text: '.',
+				size: '44',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0)
+			},
+			actions: [
+				{
+					action: 'keypad_entry',
+					options: {
+						key: '.'
+					}
+				}
+			]
+		},
+		{
+			category: 'Cue Keypad',
+			label: 'Clear',
+			bank: {
+				style: 'text',
+				text: '',
+				size: 'auto',
 				color: self.rgb(0, 0, 0),
-				bgcolor: self.rgb(255, 255, 0)
+				bgcolor: self.rgb(0, 0, 0),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAFVBMVEX///////////////////////////9nSIHRAAAAB3RSTlMAM0RVZqr/s5qSPgAAAAlwSFlzAAALEgAACxIB0t1+/AAAACB0RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgTVi7kSokAAAAvUlEQVR4nO2UOw6EMAwFDVl6jsARUqXeipqKCwC+/xE2XonweZZ4dBS4SAGjAduxRd54fPR6DmQ+wDgQihByRAhl0ff4BKEsmuUKQhFCjgghRwRQEbV2VD60iprJzjR4UBGNGkWCLh60imrVrEqqHUJbavl9DH8SoC01AwxEaF+jZC2bnOz2NQoGRYTCodipiO5D1Oe4H6dKwBWTagvXYOqqcJeOur7cIFAjxQ0nNebcwqBWD7fEqHX4xlPiB4F9kpWeFoM0AAAAAElFTkSuQmCC'
 			},
 			actions: [
 				{
-					action: 'insertcue',
+					action: 'keypad_clear'
 				}
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'Clone Cue',
+			category: 'Cue Keypad',
+			label: 'Jump to keypad cue',
 			bank: {
-				style: 'text',
-				text: 'Clone\\nCue',
-				size: '18',
+				style: 'png',
+				text: '',
+				size: '24',
+				alignment: 'center:bottom',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAGFBMVEX///////////////////////////////8pK8DIAAAACHRSTlMAESKqu8zd/03vFLEAAAAJcEhZcwAACvAAAArwAUKsNJgAAAAgdEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1Yu5EqJAAAAJdJREFUeJztz7ENgCAQheHDCSy0NzFxADdwBCt7GydQ1teAKMfdcRaWvA7C/0UB/l5f0zsz4nO1zfRRe3ToPNidUGaxK46sJRS5u6qUYq4oxeCkYyAacl+ZliyUpiyUtAKEYwFCtQjFuQhFfQZ6gQz0CFkoEFnoNhTIIwrkKQ1ylAY5SoXUXwuUDgE0k/4GzAeorKysTNoJym86giWhNfUAAAAASUVORK5CYII='
+			},
+			actions: [
+				{
+					action: 'jump_keypad'
+				}
+			],
+			feedbacks: [
+				{
+					type: 'keypad_entry'
+				}
+			]
+		},
+		{
+			category: 'Selection',
+			label: 'Select current cue',
+			bank: {
+				style: 'png',
+				text: '',
+				size: 'auto',
 				color: self.rgb(0, 0, 0),
-				bgcolor: self.rgb(255, 255, 0)
+				bgcolor: self.rgb(0, 0, 0),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAGFBMVEX///////////////////////////8AAKoflqwsAAAACHRSTlMAM1Vmd4j//8O1NiUAAAAJcEhZcwAACvAAAArwAUKsNJgAAAAgdEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1Yu5EqJAAAANtJREFUeJztljESwjAMBA2BoeUJPCFVaipqKj4QuJqO72PLVjAJko8+13jGWm8aW0oImv2YVyCvwzUsc0NfQx0eS2YDjDU0AMclFXf7D9Tpme/odob0iKESyBBNBYEskVYSZIq0lCBbVGoRckRFFSFPlFWAK8oqwBeJKsUTiSrFFRWVLyqqhkhULZGomqKoaotC2J6MwuFl5LlCK/Q/VMe8dHWY60s9BOZJUY+TeeZUw2BaD9XEmHZINVamRVPNnhkb1ABiRhk1FJnxyg3qy3zk3398bjf/eThPpTcCHSGY7xxKegAAAABJRU5ErkJggg=='
 			},
 			actions: [
 				{
-					action: 'clonecue',
+					action: 'select_current',
 				}
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'Delete Cue',
+			category: 'Selection',
+			label: 'Select up',
 			bank: {
-				style: 'text',
-				text: 'Delete\\nCue',
-				size: '18',
-				color: '16777215',
-				bgcolor: self.rgb(255, 0, 0)
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 0, 0),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAElBMVEX///////////////////////+65XQCAAAABnRSTlMAM1Vmd/910o15AAAACXBIWXMAAArwAAAK8AFCrDSYAAAAIHRFWHRTb2Z0d2FyZQBNYWNyb21lZGlhIEZpcmV3b3JrcyBNWLuRKiQAAACZSURBVHic7c67FcIwDIVhBzNARmAEGvU0TJDc/VfBehUcbCllwrFK34+flPI3d3scQLTlpgLPPASkqRbKU8QoSUkoS5GiMNVCG0BximeghilZgRKmZGwoSunWUJTSidE4ZQujccoGQaOUvwsapfxZUT+1+Ksi/s36q97WN1Sxd/7ubnlDhV69L1+/0dIzfo7Cm2iiiU6KLnIfZfo+OqWzTpAAAAAASUVORK5CYII='
 			},
 			actions: [
 				{
-					action: 'deletecue',
+					action: 'select_up',
 				}
 			]
 		},
 		{
-			category: 'CueList',
+			category: 'Selection',
+			label: 'Select down',
+			bank: {
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 0, 0),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAElBMVEX///////////////////////+65XQCAAAABnRSTlMAM1VmiP/m9nALAAAACXBIWXMAAArwAAAK8AFCrDSYAAAAIHRFWHRTb2Z0d2FyZQBNYWNyb21lZGlhIEZpcmV3b3JrcyBNWLuRKiQAAACVSURBVHic7cyxFYAgDEVRUAdwBEegsbdxAv37ryIEonI0wRYPvySPa8xvBrSoRS2qMBrzyL41w5ZH8/ISrXD3qMf+bCyw3aMZGJ+Vf3VX1POffPwcI/4iUBQJ0HmgSIL4EiIR4lOIZCjdfKRAifKRBkUKUKFIATpEVJgGERWmQonSoUQVIKJKEFFFyFNlyJhu+hBVsgNWEj467EESXQAAAABJRU5ErkJggg=='
+			},
+			actions: [
+				{
+					action: 'select_down',
+				}
+			]
+		},
+		{
+			category: 'Selection',
+			label: 'Jump to selected cue',
+			bank: {
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(204, 102, 0),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAGFBMVEX///////////////////////////////8pK8DIAAAACHRSTlMAESKqu8zd/03vFLEAAAAJcEhZcwAACvAAAArwAUKsNJgAAAAgdEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1Yu5EqJAAAAKpJREFUeJzt0j0OwjAMBWCHE3QoO1KlHqA34AhM7CycoPX1WzUE4vivlSJgqLdY731KpADUnq7huzDQ8+l546HzdCHnHkdGhTs+aAmRUWy3tEpKWHFKwFlPgHhRumXZFKGyKkJFV4FoWYFIW4XyugplfQP6AAb0FkwoESb0MhwoIg4UKQ9aKQ9aKRdyn5YoHwJor34GwgboC4PG/C6k3/YIHaH9of/741VmBr2QwGLt2oKWAAAAAElFTkSuQmCC'
+			},
+			actions: [
+				{
+					action: 'jump_selected',
+				}
+			]
+		},
+		{
+			category: 'Editing',
+			label: 'Insert cue',
+			bank: {
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(76, 0, 102),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAMFBMVEX///////////////////////////////////////////////////////////////9Or7hAAAAAEHRSTlMAESIzRFVmd4iZqrvM3e7/dpUBFQAAAAlwSFlzAAAK8AAACvABQqw0mAAAACB0RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgTVi7kSokAAABQklEQVR4nO3TP0oDQRQG8DdqYvxTDEjETnsbTyBrpZ14AdfcwQOksdYTiNgqwRNkey1ygiQoChICUygEdtf9nM26ee4yMwQbm/2qV/x25/FmHlGVKtPAkf9D9m4r5ETi6P7pQrrRZpBOe9xyofogu5PYgUQHSPp95by7XWDkEW10HEgECHfSYrELSAtaRdLKqoZC24J8vOblKd4YlXKWf7mMWFpQOPu9bs+zoBfuYR8PFnTFaA3PZIqPPUY1fBrRZSIZCTUxouCLGyBS4RxoGBlRr4jivx83V+N+NuQMLeHDiLZxw8g2zHXztRRTV5GcIb7gYsSQn0oDkTQiOuaX5nNZyopK2lm19ev5ls/TizB9CAsBzKNMk67UAVFTr/GtFdG1Xs7xQC/nu91Qrfez5p4DUbObmtGJy+jmD+8ez/MRfQNFbrVE2ACzGAAAAABJRU5ErkJggg=='
+			},
+			actions: [
+				{
+					action: 'insert_cue',
+				}
+			]
+		},
+		{
+			category: 'Editing',
+			label: 'Clone cue',
+			bank: {
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(76, 0, 102),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAJFBMVEX////////////////////////////////////////////////Vd7HLAAAADHRSTlMAESJEVWaImbvM7v88U0KyAAAACXBIWXMAAArwAAAK8AFCrDSYAAAAIHRFWHRTb2Z0d2FyZQBNYWNyb21lZGlhIEZpcmV3b3JrcyBNWLuRKiQAAABuSURBVHicY2CgP9iNBwycItyuHYmKcHFGFSEzvUFpaAt2RfAUxgGiGlCEMBUxgSgFAooYsnfv3sZASJHU7t0LsSpCBqy7dwdglUABs3cSVsNgvZkIRewF2MWpmYOppwiXL0YVjSoiR9HgS+P0AwCppKcBJcYC+wAAAABJRU5ErkJggg=='
+			},
+			actions: [
+				{
+					action: 'clone_cue',
+				}
+			]
+		},
+		{
+			category: 'Editing',
+			label: 'Delete cue',
+			bank: {
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(76, 0, 102),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAMFBMVEX///////////////////////////////////////////////////////////////9Or7hAAAAAEHRSTlMAESIzRFVmd4iZqrvM3e7/dpUBFQAAAAlwSFlzAAAK8AAACvABQqw0mAAAACB0RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgTVi7kSokAAABhUlEQVR4nO2TvU4CURCFZxVWRIpNDMZOehuewGClHfEFXHkCKOylsdYnMMZWAz4Bayi14AmAaDQxhGQL/EnYdY8zC2SF3HtbG06xmWS/3Dn3zB2ipZaKBYP+D9K7XUJGyDq8ezp3zNCWJ2kPKybI7k1mEhogqwFE3a5vnN0uMCgRbTYMkOVhXJBitQU4GiiLqDKpMj7qGsjF66w8xlsCLehk9mcNoaOBxkQp4Wpir6SBXojKX+wtINrDvQa6pJS0bOKBNvBMKrkokg18ZsFAGh9K6CJir1Wgg7BAlv+thLwf/tjSts2FP9ZD3FQOIuoHSqgTQzkgbtQPDSc1p5lq2sXGs+KJs9IZdyXkJsIzOSqFkRLawTXPDG2+4EgbZk7G4vHVqqj9Gcu8bD9wKMegzXaSAc/L6su15IUUKYPAUUJUTl6am5QLWvej+qTa/vN8F/vxIhSlWPGgjlIkK7VPlOc1vtFCdMXLOezxcr7rGUp3pmteMkCUbwkzODIxbP7g9vF0FtEvek22Eq8W+gsAAAAASUVORK5CYII='
+			},
+			actions: [
+				{
+					action: 'delete_cue',
+				}
+			]
+		},
+		{
+			category: 'Editing',
 			label: 'Undo',
 			bank: {
-				style: 'text',
-				text: 'Undo',
-				size: '18',
-				color: self.rgb(255, 255, 255),
-				bgcolor: self.rgb(0, 0, 255)
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 85, 85),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAIVBMVEX///////////////////////////////////////////9/gMdvAAAAC3RSTlMAESIzVWaIu93u/3I6PYEAAAAJcEhZcwAACvAAAArwAUKsNJgAAAAgdEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1Yu5EqJAAAAKxJREFUeJztlDEOwjAQBB0B4QM8IE+gRFSpqahT0SHxAGpqOkRDjyBhXhlR+tbRuUTCW4/GJ/u8IZTEmeVA3cFnFrwzRLD2RbxyRPsi+i1RnMdZX3pnIRjaDIi+8Y775u4NvjqiC6hXsIGbpwrhRG8hVdXQuqrqysVXbXlaSFXLxC8UVa2Tq2rOoJBVVXwUEhUkIKtKQrYw0pCpnjRkSmwCiutwAopToDzoPzICBe2PkPCJqrEAAAAASUVORK5CYII='
 			},
 			actions: [
 				{
@@ -439,14 +635,15 @@ instance.prototype.init_presets = function () {
 			]
 		},
 		{
-			category: 'CueList',
+			category: 'Editing',
 			label: 'Redo',
 			bank: {
-				style: 'text',
-				text: 'Redo',
-				size: '18',
-				color: self.rgb(255, 255, 255),
-				bgcolor: self.rgb(0, 0, 255)
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 85, 85),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAIVBMVEX///////////////////////////////////////////9/gMdvAAAAC3RSTlMAESIzVWaIu93u/3I6PYEAAAAJcEhZcwAACvAAAArwAUKsNJgAAAAgdEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1Yu5EqJAAAALFJREFUeJztlC0OAjEQRht2IUiusQ4LCm6AXoUjQaEQa1HsEbD8hLxTbu1Mp5lKEvrJ5uV1Mp1OCDVm1gXM4l0AnTm4TAMFqp4C1byqfkfVnO6oJKp21Ai8FDMbUiaBNgajr4uDxnXvFN7BTZ4YLRj4rLwOtHB0RUu+8sBq5ZanK4o/7eKKYt2yJPN1R3auKDwQDbDHBHyRgjLzJqDcwpCmzOqRUGaJSSizDhVkp0J/nQlt05ByT4pUOgAAAABJRU5ErkJggg=='
 			},
 			actions: [
 				{
@@ -455,69 +652,98 @@ instance.prototype.init_presets = function () {
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'keypad_num',
+			category: 'Editing',
+			label: 'Unlock editing',
 			bank: {
-				style: 'text',
-				text: 'Num',
-				size: '18',
+				style: 'png',
+				text: '',
+				size: 'auto',
 				color: self.rgb(0, 0, 0),
-				bgcolor: self.rgb(0, 255, 0)
+				bgcolor: self.rgb(96, 0, 39),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAMFBMVEX///////////////////////////////////////////////////////////////9Or7hAAAAAEHRSTlMAESIzRFVmd4iZqrvM3e7/dpUBFQAAAAlwSFlzAAAK8AAACvABQqw0mAAAACB0RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgTVi7kSokAAAAp0lEQVR4nGNgGFDAXLnv7Q4DAmr2/weCvwH41DCt/w8GvxXwKNL9DwWP8Rj0/v//bY6iXUBVuJ2l9///ZhBt+///Q5yK1v//AWHM//8HlxqW//8bICyO//9xeZDn/28oi/H+/ws4FEm8/wRj2v//jMs+tgIYixvmOnyAHW4zHsD6/y9hRYz//xFWxPD//7BS9B8LGHhFRLh9VNGoolFFVFY0+MoC+gAAeVtOCLIYs+0AAAAASUVORK5CYII='
 			},
 			actions: [
 				{
-					action: 'keypad_num',
+					action: 'unlock',
 				}
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'keypad_ent',
+			category: 'Editing',
+			label: 'Lock editing',
 			bank: {
-				style: 'text',
-				text: 'Enter',
-				size: '18',
+				style: 'png',
+				text: '',
+				size: 'auto',
 				color: self.rgb(0, 0, 0),
-				bgcolor: self.rgb(0, 255, 0)
+				bgcolor: self.rgb(96, 0, 39),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAIVBMVEX///////////////////////////////////////+ZmZmkrHixAAAAC3RSTlMAESIzVYi73e7//9NMVSMAAAAJcEhZcwAACvAAAArwAUKsNJgAAAAgdEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1Yu5EqJAAAAK5JREFUeJztlKEOglAYRkFRK49gMBhtasM3MLHRLITb3CwSncGRHeB5BZ9SQNDt7v63Kc5xyv9t94STruN0yjA8XuKF3fESSorA5gwUNfnUIq1oOFuCyud4MwvLI2fN4VDdJZxESZH59YjIJceD7XONIBCkCUWz3IS9IK25GqZGxK6dYzJBUm1SFSWVJ+9a75Wnk+K30+UmSGDefyBhoHvprtFLvdRLn5d+7y/4Dg8ab9SNFf0otQAAAABJRU5ErkJggg=='
 			},
 			actions: [
 				{
-					action: 'keypad_ent',
+					action: 'lock',
 				}
 			]
 		},
 		{
-			category: 'CueList',
-			label: 'keypad_clear',
+			category: 'Backups',
+			label: 'Toggle backup channel...',
 			bank: {
-				style: 'text',
-				text: 'Clear',
+				style: 'png',
+				text: 'Alice',
 				size: '18',
-				color: self.rgb(0, 0, 0),
-				bgcolor: self.rgb(0, 255, 0)
+				alignment: 'center:bottom',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 85),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAIVBMVEX///////////////////////////////////////////9/gMdvAAAAC3RSTlMAETNEZneImczu/ynKMzkAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAAWdEVYdENyZWF0aW9uIFRpbWUAMDEvMDUvMjC9Qn5kAAAAIHRFWHRTb2Z0d2FyZQBNYWNyb21lZGlhIEZpcmV3b3JrcyBNWLuRKiQAAACOSURBVHicY2AY3GAVugDXglFFKIq4VkEAkgYIWECyogXo9q3CtI9rAcgsVEUgc9AVAQlURUB5XIqYQFwF/IoYs0Dc5QI4FEHcFAm2cdVU7G6COMQCEgqrVjVj890qHACbSUgAWzgRYx1UEczhU7CHOFQRYxWIXiaAVxFSYOJRBAO0VUS1lDkKRsEoGJoAAIEZjLd7xdiCAAAAAElFTkSuQmCC'
 			},
 			actions: [
 				{
-					action: 'keypad_clear',
+					action: 'toggle_backup',
+					options: {
+						channel: 1,
+					}
 				}
 			]
 		}
-
 	];
 	self.setPresetDefinitions(presets);
 }
 
-instance.prototype.sendOSC = function (node, arg) {
+instance.prototype.init_feedbacks = function() {
 	var self = this;
-	var host = "";
+	var feedbacks = {};
 
-	if (self.config.host !== undefined && self.config.host !== ""){
+	feedbacks['keypad_entry'] = {
+		label: 'Keypad entry',
+		description: 'Update jump button display based on keypad input',
+		callback: (feedback, bank) => {
+			if (keypad_jump_cue != "") {
+				return {
+					bgcolor: self.rgb(204, 102, 0),
+					text: keypad_jump_cue
+				};
+			} else {
+				return {
+					bgcolor: self.rgb(0, 0, 0),
+					text: ""
+				};
+			}
+		}
+	};
+
+	self.setFeedbackDefinitions(feedbacks);
+};
+
+instance.prototype.sendOSC = function(node, arg) {
+	var self = this;
+	var host = "127.0.0.1";
+
+	if (self.config.host !== undefined && self.config.host !== "") {
 		host = self.config.host;
 	}
-	if (self.config.passcode !== undefined && self.config.passcode !== "") {
-		self.system.emit('osc_send', host, self.config.port, "/connect", [self.config.passcode]);
-	}
-	self.system.emit('osc_send',host, self.config.port, node, arg);
+
+	self.system.emit('osc_send', host, 32000, node, arg);
 };
 
 
@@ -527,25 +753,8 @@ instance.prototype.action = function(action) {
 	var arg;
 
 	debug('action: ', action);
-
-	
-
 	
 	switch (action.action) {
-
-/*		case 'send_unsupported_command':
-			arg = [];
-			cmd = action.options.path;
-			break;
-
-		case 'send_unsupported_command_string':
-			var bol = {
-			  type: "s",
-			  value: "" + action.options.string
-			};
-			arg =  bol;
-			cmd = action.options.path;
-			break; */
 
 		case 'go':
 			arg = null;
@@ -562,22 +771,8 @@ instance.prototype.action = function(action) {
 				type: "s",
 				value: "" + action.options.jumpcue
 			};
-			arg =  bol;
+			arg = bol;
 			cmd = '/jump';
-			break;
-
-		case 'select_cue':
-			var bol = {
-				type: "s",
-				value: "" + action.options.selectcue
-			};
-			arg =  bol;
-			cmd = '/select';
-			break;
-
-		case 'lock':
-			arg = null;
-			cmd = '/lock';
 			break;
 
 		case 'unlock':
@@ -585,17 +780,58 @@ instance.prototype.action = function(action) {
 			cmd = '/unlock';
 			break;
 
-		case 'insertcue':
+		case 'lock':
+			arg = null;
+			cmd = '/lock';
+			break;
+
+		case 'select_up':
+			var bol = {
+				type: "s",
+				value: "up"
+			};
+			arg = bol;
+			cmd = '/select';
+			break;
+
+		case 'select_down':
+			var bol = {
+				type: "s",
+				value: "down"
+			};
+			arg = bol;
+			cmd = '/select';
+			break;
+
+		case 'select_current':
+			var bol = {
+				type: "s",
+				value: "current"
+			};
+			arg = bol;
+			cmd = '/select';
+			break;
+
+		case 'jump_selected':
+			var bol = {
+				type: "s",
+				value: "selected"
+			};
+			arg = bol;
+			cmd = '/jump';
+			break;
+
+		case 'insert_cue':
 			arg = null;
 			cmd = '/insertcue';
 			break;
 
-		case 'clonecue':
+		case 'clone_cue':
 			arg = null;
 			cmd = '/clonecue';
 			break;
 
-		case 'deletecue':
+		case 'delete_cue':
 			arg = null;
 			cmd = '/deletecue';
 			break;
@@ -610,29 +846,61 @@ instance.prototype.action = function(action) {
 			cmd = '/redo';
 			break;
 
+		case 'toggle_backup':
+			var bol = {
+				type: "i",
+				value: action.options.channel
+			};
+			arg = bol;
+			cmd = '/togglebackup';
+			break;
+
+		case 'keypad_entry':
+			if (keypad_jump_cue == "" && action.options.key == ".") {
+				// prepend 0 to empty point input
+				keypad_jump_cue = keypad_jump_cue + "0" + action.options.key;
+			} else if (keypad_jump_cue == "0" && action.options.key != ".") {
+				// strip leading 0 if not a point input
+				keypad_jump_cue = action.options.key;
+			} else if (!(keypad_jump_cue.includes(".") && action.options.key == ".") && keypad_jump_cue.length < 7) {
+				// prohibit multiple points in input
+				// x32tc maximum cue number is 9999.99 => 7 characters
+				if (keypad_jump_cue.includes(".") && keypad_jump_cue.length > 3) {
+					if (keypad_jump_cue.substring(keypad_jump_cue.length - 3, keypad_jump_cue.length - 2) != ".") {
+						// only accept two digits after a point
+						keypad_jump_cue = keypad_jump_cue + action.options.key;
+					}
+				} else if (!(keypad_jump_cue.length == 4 && !keypad_jump_cue.includes(".") && action.options.key != ".")) {
+					// x32tc maximum whole cue number is 9999, after 4 digits only accept a point
+					keypad_jump_cue = keypad_jump_cue + action.options.key;
+				}
+			}
+			self.checkFeedbacks('keypad_entry');
+			break;
+
 		case 'keypad_clear':
 			keypad_jump_cue = "";
-			self.setVariable('n_jump_cue_num', keypad_jump_cue);
+			self.checkFeedbacks('keypad_entry');
 			break;
 
-		case 'keypad_ent':
-			var bol = {
-				type: "s",
-				value: "" + keypad_jump_cue
-			};
-			arg =  bol;
-			cmd = '/jump';
+		case 'jump_keypad':
+			if (keypad_jump_cue != "") {
+				if (keypad_jump_cue.endsWith(".")) {
+					// strip off trailing point
+					keypad_jump_cue = keypad_jump_cue.slice(0, -1);
+				}
+
+				var bol = {
+					type: "s",
+					value: "" + keypad_jump_cue
+				};
+				arg = bol;
+				cmd = '/jump';
+			}
 			keypad_jump_cue = "";
-			self.setVariable('n_jump_cue_num', keypad_jump_cue);
+			self.checkFeedbacks('keypad_entry');
 
 			break;
-
-		case 'keypad_num':
-			keypad_jump_cue = keypad_jump_cue + action.options.keypad_num
-			self.setVariable('n_jump_cue_num', keypad_jump_cue);
-			break;
-
-			
 
 	}
 
