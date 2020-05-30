@@ -2,6 +2,9 @@
 
 See HELP.md for more information about this module.
 
+**Version 1.0.6**
+* Added spare backup commands (supported in X32TC v2.11)
+
 **Version 1.0.5**
 * Refined X32TC v2.9.1 OSC commands and added preset icons
 * Removed unsupported passcode and example functions

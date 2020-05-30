@@ -1,4 +1,7 @@
 /*
+ Version 1.0.6
+  Added spare backup commands (supported in X32TC v2.11)
+
  Version 1.0.5
   Refined X32TC v2.9.1 OSC commands and added preset icons
   Removed unsupported passcode and example functions
@@ -30,6 +33,7 @@ var debug;
 var log;
 
 var keypad_jump_cue = "";
+var keypad_mode = "cue";
 
 function instance(system, id, config) {
 	var self = this;
@@ -187,6 +191,29 @@ instance.prototype.actions = function(system) {
 					default: 1
 				}
 			]
+		},
+		'allocate_spare': {
+			label: 'Allocate spare backup',
+			options: [
+				{
+					type: 'number',
+					label: 'Main Channel',
+					id: 'channel',
+					min: 1,
+					max: 500,
+					required: true,
+					default: 1
+				}
+			]
+		},
+		'toggle_spare': {
+			label: 'Toggle spare backup'
+		},
+		'remove_spare': {
+			label: 'Remove spare allocation'
+		},
+		'keypad_spare': {
+			label: 'Allocate keypad channel to spare backup'
 		}
 	});
 }
@@ -705,7 +732,87 @@ instance.prototype.init_presets = function() {
 					}
 				}
 			]
+		},
+		{
+			category: 'Backups',
+			label: 'Allocate spare backup...',
+			bank: {
+				style: 'png',
+				text: 'Bob',
+				size: '18',
+				alignment: 'center:bottom',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 85),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAJ1BMVEX///////////////////////////////////////////////////9Ruv0SAAAADXRSTlMAESIzRGZ3iJmqzO7/4p23GgAAAAlwSFlzAAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwMS8wNS8yML1CfmQAAAAgdEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1Yu5EqJAAAAGlJREFUeJxjYBgC4MyoIgKKeM5AABUUHSDCPp4DILMIKwISJChiJkYRTyMRbuI5nYBLEZiCKDpzygG7Ilg4QaiTCnhNIkoRXuuQFZ0OIMLhhdjVoCjCE5gIRTgBFRVRLWWOglEwCoYcAACT7lIlXCOjpwAAAABJRU5ErkJggg=='
+			},
+			actions: [
+				{
+					action: 'allocate_spare',
+					options: {
+						channel: 2,
+					}
+				}
+			]
+		},
+		{
+			category: 'Backups',
+			label: 'Toggle spare backup',
+			bank: {
+				style: 'png',
+				text: 'Spare',
+				size: '18',
+				alignment: 'center:bottom',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 85),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAJFBMVEX///////////////////////////////////////////+ZmZkOWw4VAAAADHRSTlMAETNEZneImczu//+gLEI7AAAACXBIWXMAAAsSAAALEgHS3X78AAAAFnRFWHRDcmVhdGlvbiBUaW1lADAxLzA1LzIwvUJ+ZAAAACB0RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgTVi7kSokAAAAkElEQVR4nGNgGNxgFboA14JRRSiKuFZBAJIGCFhAsqIF6Pat2g0Cu1AVgcxCVQQUWI2uCEigKgLK41LEBOIq4FfEmAXiLhfAoQjipkiwjaumYncTxCEWkFBYtaoZm+9W4QDYTEIC2MKJGOugimAOn4I9xKGKGKtA9DIBvIqQAhOPIhigrSKqpcxRMApGwdAEAOxpv2sjbcJLAAAAAElFTkSuQmCC'
+			},
+			actions: [
+				{
+					action: 'toggle_spare',
+				}
+			]
+		},
+		{
+			category: 'Backups',
+			label: 'Remove spare allocation',
+			bank: {
+				style: 'png',
+				text: '',
+				size: 'auto',
+				color: self.rgb(0, 0, 0),
+				bgcolor: self.rgb(0, 0, 85),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6AgMAAABuafceAAAAA3NCSVQICAjb4U/gAAAACVBMVEX///////+ZmZlVZlogAAAAA3RSTlMA//9EUNYhAAAACXBIWXMAAAsSAAALEgHS3X78AAAAFnRFWHRDcmVhdGlvbiBUaW1lADAxLzA1LzIwvUJ+ZAAAACB0RVh0U29mdHdhcmUATWFjcm9tZWRpYSBGaXJld29ya3MgTVi7kSokAAAAWklEQVR4nGNgGDmA0WEwCoWGhoYQFopatWoKulBoGIaQAxtWoQAgRBMKYUQRApklyorsNrCNrKEY7mJEcRpYFRYhVI1gISzGozkCJITmVCzeJkqIuFAdBdQFAHT7KqYE3Q/8AAAAAElFTkSuQmCC'
+			},
+			actions: [
+				{
+					action: 'remove_spare',
+				}
+			]
+		},
+		{
+			category: 'Backups',
+			label: 'Allocate keypad channel to spare backup',
+			bank: {
+				style: 'png',
+				text: '',
+				size: '18',
+				alignment: 'center:bottom',
+				color: self.rgb(255, 255, 255),
+				bgcolor: self.rgb(0, 0, 0),
+				png64: 'iVBORw0KGgoAAAANSUhEUgAAAEgAAAA6BAMAAADhKQK+AAAAA3NCSVQICAjb4U/gAAAAJ1BMVEX///////////////////////////////////////////////////9Ruv0SAAAADXRSTlMAESIzRGZ3iJmqzO7/4p23GgAAAAlwSFlzAAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwMS8wNS8yML1CfmQAAAAgdEVYdFNvZnR3YXJlAE1hY3JvbWVkaWEgRmlyZXdvcmtzIE1Yu5EqJAAAAGlJREFUeJxjYBgC4MyoIgKKeM5AABUUHSDCPp4DILMIKwISJChiJkYRTyMRbuI5nYBLEZiCKDpzygG7Ilg4QaiTCnhNIkoRXuuQFZ0OIMLhhdjVoCjCE5gIRTgBFRVRLWWOglEwCoYcAACT7lIlXCOjpwAAAABJRU5ErkJggg=='
+			},
+			actions: [
+				{
+					action: 'keypad_spare',
+				}
+			],
+			feedbacks: [
+				{
+					type: 'keypad_spare_entry'
+				}
+			]
 		}
+
 	];
 	self.setPresetDefinitions(presets);
 }
@@ -718,10 +825,33 @@ instance.prototype.init_feedbacks = function() {
 		label: 'Keypad entry',
 		description: 'Update jump button display based on keypad input',
 		callback: (feedback, bank) => {
-			if (keypad_jump_cue != "") {
+			if (keypad_jump_cue != "" && keypad_mode == "cue") {
 				return {
 					bgcolor: self.rgb(204, 102, 0),
 					text: keypad_jump_cue
+				};
+			} else {
+				return {
+					bgcolor: self.rgb(0, 0, 0),
+					text: ""
+				};
+			}
+		}
+	};
+
+	feedbacks['keypad_spare_entry'] = {
+		label: 'Allocate spare keypad entry',
+		description: 'Update allocate spare button display based on keypad input',
+		callback: (feedback, bank) => {
+			if (keypad_jump_cue != "" && keypad_mode == "spare") {
+				return {
+					bgcolor: self.rgb(0, 0, 85),
+					text: keypad_jump_cue
+				};
+			} else if (keypad_mode == "spare") {
+				return {
+					bgcolor: self.rgb(0, 0, 85),
+					text: ""
 				};
 			} else {
 				return {
@@ -855,51 +985,107 @@ instance.prototype.action = function(action) {
 			cmd = '/togglebackup';
 			break;
 
-		case 'keypad_entry':
-			if (keypad_jump_cue == "" && action.options.key == ".") {
-				// prepend 0 to empty point input
-				keypad_jump_cue = keypad_jump_cue + "0" + action.options.key;
-			} else if (keypad_jump_cue == "0" && action.options.key != ".") {
-				// strip leading 0 if not a point input
-				keypad_jump_cue = action.options.key;
-			} else if (!(keypad_jump_cue.includes(".") && action.options.key == ".") && keypad_jump_cue.length < 7) {
-				// prohibit multiple points in input
-				// x32tc maximum cue number is 9999.99 => 7 characters
-				if (keypad_jump_cue.includes(".") && keypad_jump_cue.length > 3) {
-					if (keypad_jump_cue.substring(keypad_jump_cue.length - 3, keypad_jump_cue.length - 2) != ".") {
-						// only accept two digits after a point
-						keypad_jump_cue = keypad_jump_cue + action.options.key;
-					}
-				} else if (!(keypad_jump_cue.length == 4 && !keypad_jump_cue.includes(".") && action.options.key != ".")) {
-					// x32tc maximum whole cue number is 9999, after 4 digits only accept a point
-					keypad_jump_cue = keypad_jump_cue + action.options.key;
-				}
-			}
-			self.checkFeedbacks('keypad_entry');
+		case 'allocate_spare':
+			var bol = {
+				type: "i",
+				value: action.options.channel
+			};
+			arg = bol;
+			cmd = '/allocatespare';
 			break;
 
-		case 'keypad_clear':
-			keypad_jump_cue = "";
-			self.checkFeedbacks('keypad_entry');
-			break;
-
-		case 'jump_keypad':
-			if (keypad_jump_cue != "") {
-				if (keypad_jump_cue.endsWith(".")) {
-					// strip off trailing point
-					keypad_jump_cue = keypad_jump_cue.slice(0, -1);
-				}
-
+		case 'keypad_spare':
+			if (keypad_jump_cue == "" && keypad_mode == "cue") {
+				keypad_mode = "spare";
+			} else if (keypad_mode == "spare" && keypad_jump_cue.length > 0 && keypad_jump_cue.length <= 2 && !keypad_jump_cue.includes(".")) {
+				// doiiiittttt
 				var bol = {
 					type: "s",
 					value: "" + keypad_jump_cue
 				};
 				arg = bol;
-				cmd = '/jump';
-			}
-			keypad_jump_cue = "";
-			self.checkFeedbacks('keypad_entry');
+				cmd = '/allocatespare';
 
+				keypad_jump_cue = "";
+				keypad_mode = "cue";
+			} else if (keypad_mode == "spare") {
+				// invalid input, reset
+				keypad_jump_cue = "";
+				keypad_mode = "cue";
+			}
+
+			self.checkFeedbacks('keypad_entry');
+			self.checkFeedbacks('keypad_spare_entry');
+			break;
+
+		case 'toggle_spare':
+			arg = null;
+			cmd = '/togglespare';
+			break;
+
+		case 'remove_spare':
+			arg = null;
+			cmd = '/removespare';
+			break;
+
+		case 'keypad_entry':
+			if (keypad_mode == "cue") {
+				if (keypad_jump_cue == "" && action.options.key == ".") {
+					// prepend 0 to empty point input
+					keypad_jump_cue = keypad_jump_cue + "0" + action.options.key;
+				} else if (keypad_jump_cue == "0" && action.options.key != ".") {
+					// strip leading 0 if not a point input
+					keypad_jump_cue = action.options.key;
+				} else if (!(keypad_jump_cue.includes(".") && action.options.key == ".") && keypad_jump_cue.length < 7) {
+					// prohibit multiple points in input
+					// x32tc maximum cue number is 9999.99 => 7 characters
+					if (keypad_jump_cue.includes(".") && keypad_jump_cue.length > 3) {
+						if (keypad_jump_cue.substring(keypad_jump_cue.length - 3, keypad_jump_cue.length - 2) != ".") {
+							// only accept two digits after a point
+							keypad_jump_cue = keypad_jump_cue + action.options.key;
+						}
+					} else if (!(keypad_jump_cue.length == 4 && !keypad_jump_cue.includes(".") && action.options.key != ".")) {
+						// x32tc maximum whole cue number is 9999, after 4 digits only accept a point
+						keypad_jump_cue = keypad_jump_cue + action.options.key;
+					}
+				}
+			} else if (keypad_mode == "spare") {
+				if (!(keypad_jump_cue == "" && action.options.key == "0") && action.options.key != "." && keypad_jump_cue.length <= 1) {
+					// don't allow leading 0 nor point input
+					// max 2 digits
+					keypad_jump_cue = keypad_jump_cue + action.options.key;
+				}
+			}
+			self.checkFeedbacks('keypad_entry');
+			self.checkFeedbacks('keypad_spare_entry');
+			break;
+
+		case 'keypad_clear':
+			keypad_jump_cue = "";
+			keypad_mode = "cue";
+			self.checkFeedbacks('keypad_entry');
+			self.checkFeedbacks('keypad_spare_entry');
+			break;
+
+		case 'jump_keypad':
+			if (keypad_mode == "cue") {
+				if (keypad_jump_cue != "") {
+					if (keypad_jump_cue.endsWith(".")) {
+						// strip off trailing point
+						keypad_jump_cue = keypad_jump_cue.slice(0, -1);
+					}	
+
+					var bol = {
+						type: "s",
+						value: "" + keypad_jump_cue
+					};
+					arg = bol;
+					cmd = '/jump';
+				}
+				keypad_jump_cue = "";
+			}
+			self.checkFeedbacks('keypad_entry');
+			self.checkFeedbacks('keypad_spare_entry');
 			break;
 
 	}
