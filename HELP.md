@@ -15,3 +15,4 @@ Check out the [X32 Theatre Control website](http://jamesholt.audio/x32tc/) for f
 * Unlock / Lock editing
 * Undo / Redo
 * Toggle backup channels
+* Allocate / Toggle / Remove spare backup channel
