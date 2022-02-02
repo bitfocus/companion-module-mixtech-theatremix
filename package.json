@@ -12,5 +12,13 @@
 	"description": "X32 Theatre Control plugin for Companion",
 	"main": "x32tc.js",
 	"author": "Anthony Hunt <ant.hunt@gmail.com> & James Holt <companion@jamesholt.audio>",
-	"license": "MIT"
+	"license": "MIT",
+	"homepage": "https://github.com/bitfocus/companion-module-jamesholt-x32tc#readme",
+	"bugs": {
+		"url": "https://github.com/bitfocus/companion-module-jamesholt-x32tc/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/bitfocus/companion-module-jamesholt-x32tc.git"
+	}
 }
