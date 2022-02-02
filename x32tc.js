@@ -97,7 +97,7 @@ instance.prototype.destroy = function() {
 instance.prototype.actions = function(system) {
 	var self = this;
 
-	self.system.emit('instance_actions', self.id, {
+	self.setActions({
 		'go': {
 			label: 'Go'
 		},
@@ -873,7 +873,7 @@ instance.prototype.sendOSC = function(node, arg) {
 		host = self.config.host;
 	}
 
-	self.system.emit('osc_send', host, 32000, node, arg);
+	self.oscSend(host, 32000, node, arg);
 };
 
 
