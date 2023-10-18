@@ -4,4 +4,3 @@ node_modules
 pkg
 pkg.tgz
 .prettierignore
-.eslintrc

@@ -98,9 +98,18 @@ module.exports = function (self) {
 						keypad_spare_entry: '',
 					})
 				} else if (self.keypadMode == 'spare') {
-					if (action.options.key != '.' && self.keypadJumpCue.length <= 2) {
+					if (self.keypadJumpCue == '' && (action.options.key == '0' || action.options.key == '.')) {
+						// map single 0 or . to x (remove)
+						self.keypadJumpCue = 'x'
+					} else if (self.keypadJumpCue == 'x' && action.options.key != '.') {
+						// strip leading 0 (x) if followed by other input
+						// but also map single 0 to x (remove)
+						if (action.options.key == '0') action.options.key = 'x'
+
+						self.keypadJumpCue = action.options.key
+					} else if (action.options.key != '.' && self.keypadJumpCue.length <= 2) {
 						// don't allow point input
-						// but allow leading 0 => unallocate
+						// but allow single 0 => unallocate
 						// max 3 digits
 						self.keypadJumpCue = self.keypadJumpCue + action.options.key
 					}
@@ -116,6 +125,7 @@ module.exports = function (self) {
 		},
 		keypad_clear: {
 			name: 'Keypad clear',
+			description: 'For use with with "jump to keypad cue" and "allocate keypad channel to spare backup" actions',
 			callback: async (action) => {
 				self.keypadJumpCue = ''
 				self.keypadMode = 'cue'
@@ -147,6 +157,54 @@ module.exports = function (self) {
 						])
 					}
 					self.keypadJumpCue = ''
+
+					self.setVariableValues({
+						keypad_jump_entry: '',
+						keypad_spare_entry: '',
+					})
+				}
+
+				self.checkFeedbacks('keypad_cue_entry', 'keypad_spare_entry')
+			},
+		},
+		keypad_spare: {
+			name: 'Allocate keypad channel to spare backup',
+			description:
+				'First execute this action, then select a channel using keypad entry actions, then execute this action again to allocate. Use 0 to remove the allocation.',
+			callback: async (action) => {
+				if (self.keypadJumpCue == '' && self.keypadMode == 'cue') {
+					self.keypadMode = 'spare'
+				} else if (
+					self.keypadMode == 'spare' &&
+					self.keypadJumpCue.length > 0 &&
+					self.keypadJumpCue.length <= 3 &&
+					!self.keypadJumpCue.includes('.')
+				) {
+					// doiiiittttt
+					intChannel = parseInt(self.keypadJumpCue)
+					if (intChannel <= 0 || self.keypadJumpCue == 'x') {
+						// treat as unallocate
+						sendOscMessage('/removespare', [])
+					} else {
+						sendOscMessage('/allocatespare', [
+							{
+								type: 'i',
+								value: intChannel,
+							},
+						])
+					}
+
+					self.keypadJumpCue = ''
+					self.keypadMode = 'cue'
+
+					self.setVariableValues({
+						keypad_jump_entry: '',
+						keypad_spare_entry: '',
+					})
+				} else if (self.keypadMode == 'spare') {
+					// invalid input, reset
+					self.keypadJumpCue = ''
+					self.keypadMode = 'cue'
 
 					self.setVariableValues({
 						keypad_jump_entry: '',
@@ -309,54 +367,6 @@ module.exports = function (self) {
 			name: 'Remove spare allocation',
 			callback: async (action) => {
 				sendOscMessage('/removespare', [])
-			},
-		},
-		keypad_spare: {
-			name: 'Allocate keypad channel to spare backup',
-			description:
-				'First execute this action, then select a channel using keypad entry actions, then execute this action again to allocate. Use 0 to remove the allocation.',
-			callback: async (action) => {
-				if (self.keypadJumpCue == '' && self.keypadMode == 'cue') {
-					self.keypadMode = 'spare'
-				} else if (
-					self.keypadMode == 'spare' &&
-					self.keypadJumpCue.length > 0 &&
-					self.keypadJumpCue.length <= 3 &&
-					!self.keypadJumpCue.includes('.')
-				) {
-					// doiiiittttt
-					intChannel = parseInt(self.keypadJumpCue)
-					if (intChannel <= 0) {
-						// treat as unallocate
-						sendOscMessage('/removespare', [])
-					} else {
-						sendOscMessage('/allocatespare', [
-							{
-								type: 'i',
-								value: intChannel,
-							},
-						])
-					}
-
-					self.keypadJumpCue = ''
-					self.keypadMode = 'cue'
-
-					self.setVariableValues({
-						keypad_jump_entry: '',
-						keypad_spare_entry: '',
-					})
-				} else if (self.keypadMode == 'spare') {
-					// invalid input, reset
-					self.keypadJumpCue = ''
-					self.keypadMode = 'cue'
-
-					self.setVariableValues({
-						keypad_jump_entry: '',
-						keypad_spare_entry: '',
-					})
-				}
-
-				self.checkFeedbacks('keypad_cue_entry', 'keypad_spare_entry')
 			},
 		},
 	})

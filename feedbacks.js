@@ -1,8 +1,5 @@
 const { combineRgb } = require('@companion-module/base')
 
-// TODO change to booleans with default style
-// ref https://github.com/bitfocus/companion-module-base/wiki/Migrating-legacy-to-boolean-feedbacks
-
 module.exports = async function (self) {
 	self.setFeedbackDefinitions({
 		keypad_cue_entry: {

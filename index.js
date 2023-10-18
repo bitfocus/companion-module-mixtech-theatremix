@@ -1,5 +1,4 @@
 const { InstanceBase, Regex, runEntrypoint, InstanceStatus } = require('@companion-module/base')
-const UpgradeScripts = require('./upgrades')
 const UpdateActions = require('./actions')
 const UpdateFeedbacks = require('./feedbacks')
 const UpdateVariableDefinitions = require('./variables')
@@ -253,4 +252,4 @@ class TheatreMixInstance extends InstanceBase {
 	}
 }
 
-runEntrypoint(TheatreMixInstance, UpgradeScripts)
+runEntrypoint(TheatreMixInstance, [])

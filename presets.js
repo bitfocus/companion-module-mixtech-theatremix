@@ -52,7 +52,7 @@ module.exports = function (self) {
 	presets['go_indicator'] = {
 		type: 'button',
 		category: 'Cue Control',
-		name: 'Go (with current cue displayed)',
+		name: 'Go (with current cue display)',
 		style: {
 			text: '$(theatremix:current_cue)',
 			size: '18',
@@ -98,30 +98,6 @@ module.exports = function (self) {
 	}
 
 	// keypad
-	presets['keypad_0'] = {
-		type: 'button',
-		category: 'Keypad',
-		name: '0',
-		style: {
-			text: '0',
-			size: '44',
-			color: combineRgb(255, 255, 255),
-			bgcolor: combineRgb(0, 0, 0),
-		},
-		steps: [
-			{
-				down: [
-					{
-						actionId: 'keypad_entry',
-						options: {
-							key: '0',
-						},
-					},
-				],
-			},
-		],
-	}
-
 	presets['keypad_1'] = {
 		type: 'button',
 		category: 'Keypad',
@@ -331,6 +307,30 @@ module.exports = function (self) {
 						actionId: 'keypad_entry',
 						options: {
 							key: '9',
+						},
+					},
+				],
+			},
+		],
+	}
+
+	presets['keypad_0'] = {
+		type: 'button',
+		category: 'Keypad',
+		name: '0',
+		style: {
+			text: '0',
+			size: '44',
+			color: combineRgb(255, 255, 255),
+			bgcolor: combineRgb(0, 0, 0),
+		},
+		steps: [
+			{
+				down: [
+					{
+						actionId: 'keypad_entry',
+						options: {
+							key: '0',
 						},
 					},
 				],
