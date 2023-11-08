@@ -40,10 +40,39 @@ class TheatreMixInstance extends InstanceBase {
 	// When module gets deleted
 	async destroy() {
 		this.log('debug', 'destroy')
+
+		if (this.subscribeTimer) {
+			clearInterval(this.subscribeTimer)
+			this.subscribeTimer = undefined
+		}
+
+		if (this.reconnectTimer) {
+			clearInterval(this.reconnectTimer)
+			this.reconnectTimer = undefined
+		}
+
+		if (this.connectivityTimer) {
+			clearInterval(this.connectivityTimer)
+			this.connectivityTimer = undefined
+		}
+
+		if (this.osc) {
+			try {
+				this.osc.close()
+			} catch (e) {
+				// Ignore
+			}
+		}
 	}
 
 	async configUpdated(config) {
 		this.config = config
+
+		this.reconnectTimer = setInterval(() => {
+			this.setupOscSocket()
+		}, 2000)
+
+		this.setupOscSocket()
 	}
 
 	// Return config fields for web config
