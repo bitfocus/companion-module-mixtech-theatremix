@@ -841,5 +841,84 @@ module.exports = function (self) {
 		],
 	}
 
+	presets['mark_current'] = {
+		type: 'button',
+		category: 'Markers/Notes',
+		name: 'Mark current cue',
+		style: {
+			text: '',
+			size: 'auto',
+			color: combineRgb(0, 0, 0),
+			bgcolor: combineRgb(2, 81, 138),
+			png64: Icons.ICON_CUE_MARK,
+		},
+		steps: [
+			{
+				down: [
+					{
+						actionId: 'mark_cue',
+						options: {
+							selection: 'current',
+							notes: '',
+						},
+					},
+				],
+			},
+		],
+	}
+
+	presets['mark_current_note'] = {
+		type: 'button',
+		category: 'Markers/Notes',
+		name: 'Mark current cue with note',
+		style: {
+			text: 'Note',
+			size: '18',
+			alignment: 'center:bottom',
+			color: combineRgb(255, 255, 255),
+			bgcolor: combineRgb(2, 81, 138),
+			png64: Icons.ICON_CUE_MARK_NOTES,
+		},
+		steps: [
+			{
+				down: [
+					{
+						actionId: 'mark_cue',
+						options: {
+							selection: 'current',
+							notes: 'Note',
+						},
+					},
+				],
+			},
+		],
+	}
+
+	presets['mark_selected'] = {
+		type: 'button',
+		category: 'Markers/Notes',
+		name: 'Mark selected cue',
+		style: {
+			text: '',
+			size: 'auto',
+			color: combineRgb(0, 0, 0),
+			bgcolor: combineRgb(2, 81, 138),
+			png64: Icons.ICON_CUE_MARK_SELECTED,
+		},
+		steps: [
+			{
+				down: [
+					{
+						actionId: 'mark_cue',
+						options: {
+							selection: 'selected',
+							notes: '',
+						},
+					},
+				],
+			},
+		],
+	}
+
 	self.setPresetDefinitions(presets)
 }
