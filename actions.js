@@ -259,6 +259,39 @@ module.exports = function (self) {
 				])
 			},
 		},
+		mark_cue: {
+			name: 'Mark cue',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Which cue',
+					choices: [
+						{ id: 'current', label: 'Current cue' },
+						{ id: 'selected', label: 'Selected cue' },
+					],
+					id: 'selection',
+					default: 'current',
+				},
+				{
+					type: 'textinput',
+					label: 'Notes (optional)',
+					id: 'notes',
+					default: '',
+				},
+			],
+			callback: async (action) => {
+				sendOscMessage('/markcue', [
+					{
+						type: 's',
+						value: action.options.selection,
+					},
+					{
+						type: 's',
+						value: action.options.notes,
+					},
+				])
+			},
+		},
 		insert_cue: {
 			name: 'Insert cue',
 			callback: async (action) => {
@@ -318,7 +351,7 @@ module.exports = function (self) {
 			options: [
 				{
 					type: 'number',
-					label: 'Main Channel',
+					label: 'Main channel',
 					id: 'channel',
 					min: 1,
 					max: 500,
@@ -340,7 +373,7 @@ module.exports = function (self) {
 			options: [
 				{
 					type: 'number',
-					label: 'Main Channel',
+					label: 'Main channel',
 					id: 'channel',
 					min: 1,
 					max: 500,

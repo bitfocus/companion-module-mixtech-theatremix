@@ -2,6 +2,10 @@
 
 See HELP.md for more information about this module.
 
+**Version 2.1**
+
+- Added mark cue commands (notes supported in TheatreMix v3.3)
+
 **Version 2.0**
 
 - Refactored for Companion v3
