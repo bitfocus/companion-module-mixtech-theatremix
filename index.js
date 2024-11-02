@@ -210,9 +210,11 @@ class TheatreMixInstance extends InstanceBase {
 
 				this.updateStatus(InstanceStatus.Connecting)
 
-				this.reconnectTimer = setInterval(() => {
-					this.setupOscSocket()
-				}, 2000)
+				if (!this.reconnectTimer) {
+					this.reconnectTimer = setInterval(() => {
+						this.setupOscSocket()
+					}, 2000)
+				}
 			} else if (message.address == '/cuefired') {
 				if (message.args && message.args[0].type == 's') {
 					this.setVariableValues({
