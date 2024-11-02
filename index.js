@@ -68,9 +68,11 @@ class TheatreMixInstance extends InstanceBase {
 	async configUpdated(config) {
 		this.config = config
 
-		this.reconnectTimer = setInterval(() => {
-			this.setupOscSocket()
-		}, 2000)
+		if (!this.reconnectTimer) {
+			this.reconnectTimer = setInterval(() => {
+				this.setupOscSocket()
+			}, 2000)
+		}
 
 		this.setupOscSocket()
 	}
