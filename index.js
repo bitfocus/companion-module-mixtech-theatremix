@@ -85,7 +85,7 @@ class TheatreMixInstance extends InstanceBase {
 				id: 'info',
 				width: 12,
 				label: 'Information',
-				value: 'Controls <a href="https://theatremix.com/" target="_new">TheatreMix</a>',
+				value: 'Controls https://theatremix.com/',
 			},
 			{
 				type: 'textinput',
